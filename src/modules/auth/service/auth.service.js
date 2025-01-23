@@ -1,9 +1,13 @@
 import User from '../../../db/models/user.model.js';
 import bcrypt from 'bcrypt';
 import CryptoJS from 'crypto-js';
+import Jwt from 'jsonwebtoken';
+import sendEmail from '../../../utlits/sendEmail.js';
  export const register=async (req, res)=> {
     try {
-      const { Username, email, password,confirmedPassword } = req.body;
+      const { userName, email, password,confirmedPassword,phone } = req.body;
+      
+      
       if (password !== confirmedPassword) {
         return res.status(422).json({ message: "repeatPassword doesn't match password" });
       }
@@ -15,12 +19,12 @@ import CryptoJS from 'crypto-js';
 
       const encryptPhone = CryptoJS.AES.encrypt(phone,process.env.SECRET_WORD_CRYPTO);
 
-      const user = await User.create({ Username,email,password: hashedPassword,phone: encryptPhone, });
-
+      const user = await User.create({ userName,email,password: hashedPassword,phone:encryptPhone });
+ 
   
       const objUser = user.toObject();
       delete objUser.hashedPassword;
-
+      sendEmail()
       res.status(200).json({ message: `${email} registered successfully`, user: objUser });
     } catch (error) {
       return res.status(500).json({ message: error.message });
@@ -44,8 +48,8 @@ export const login= async (req, res)=> {
       const objUser = user.toObject();
       objUser.phone = decryptPhone;
       delete objUser.password;
-
-      res.status(200).json({ message: `${user.name}  Welcome`, user: objUser });
+      let token = Jwt.sign({ id: User._id }, process.env.SECRETKEY);
+      res.status(200).json({ message: `${user.name}  Welcome`,token});
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
