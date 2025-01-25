@@ -1,4 +1,5 @@
 import User from '../../../db/models/user.model.js';
+
 import bcrypt from 'bcrypt';
 import CryptoJS from 'crypto-js';
 import Jwt from 'jsonwebtoken';
@@ -20,7 +21,7 @@ import sendEmail from '../../../utlits/sendEmail.js';
       const encryptPhone = CryptoJS.AES.encrypt(phone,process.env.SECRET_WORD_CRYPTO);
 
       const user = await User.create({ userName,email,password: hashedPassword,phone:encryptPhone });
- 
+    
   
       const objUser = user.toObject();
       delete objUser.hashedPassword;
